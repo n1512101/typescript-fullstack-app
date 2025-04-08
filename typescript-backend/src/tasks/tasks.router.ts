@@ -1,7 +1,11 @@
 import { Router, Request, Response } from "express";
 import { TasksController } from "./tasks.controller";
 import { injectable, inject } from "inversify";
-import { ITask } from "./task.interface";
+import { IPartialTaskWithId, ITask } from "./task.interface";
+import { validationResult } from "express-validator";
+import { createTaskValidator } from "./validators/createTask.validator";
+import { getTasksValidator } from "./validators/getTasks.validator";
+import { StatusCodes } from "http-status-codes";
 
 @injectable()
 export class TasksRouter {
@@ -15,22 +19,45 @@ export class TasksRouter {
   }
 
   private initializeRoutes() {
-    this.router.get("/", (req: Request, res: Response) => {
-      const newTask = this.tasksController.handleGetTasks();
-      res.json(newTask);
-    });
-
-    this.router.post(
-      "/create",
-      async (req: Request<{}, {}, ITask>, res: Response) => {
-        const newTask = await this.tasksController.handlePostTasks(req, res);
-        res.json(newTask);
+    this.router.get(
+      "/",
+      getTasksValidator,
+      async (req: Request, res: Response) => {
+        const result = validationResult(req);
+        console.log(result);
+        console.log(req.query);
+        if (result.isEmpty()) {
+          const allTasks = await this.tasksController.handleGetTasks(req, res);
+          res.json(allTasks);
+        } else {
+          res.json(result.array());
+        }
       }
     );
 
-    this.router.patch("/update", (req: Request, res: Response) => {
-      const newTask = this.tasksController.handlePatchTasks();
-      res.json(newTask);
-    });
+    this.router.post(
+      "/create",
+      createTaskValidator,
+      async (req: Request<{}, {}, ITask>, res: Response) => {
+        const result = validationResult(req);
+        if (result.isEmpty()) {
+          const newTask = await this.tasksController.handlePostTasks(req, res);
+          res.status(StatusCodes.CREATED).json(newTask);
+        } else {
+          res.status(StatusCodes.BAD_REQUEST).json(result.array());
+        }
+      }
+    );
+
+    this.router.patch(
+      "/update",
+      async (req: Request<{}, {}, IPartialTaskWithId>, res: Response) => {
+        const updatedTask = await this.tasksController.handlePatchTasks(
+          req,
+          res
+        );
+        res.json(updatedTask);
+      }
+    );
   }
 }

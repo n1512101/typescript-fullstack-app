@@ -1,7 +1,7 @@
 import { inject, injectable } from "inversify";
 import { UserController } from "../user/user.controller";
 import { Request, Response } from "express";
-import { ITask } from "./task.interface";
+import { IPartialTaskWithId, ITask } from "./task.interface";
 import { Task } from "./task.schema";
 import { Document } from "mongoose";
 
@@ -9,13 +9,9 @@ import { Document } from "mongoose";
 export class TasksController {
   constructor(@inject(UserController) private userController: UserController) {}
 
-  public handleGetTasks() {
-    return [
-      {
-        title: "this is a title",
-        description: "task description",
-      },
-    ];
+  public async handleGetTasks(req: Request, res: Response) {
+    const tasks = await Task.find({});
+    return tasks;
   }
 
   public async handlePostTasks(req: Request<{}, {}, ITask>, res: Response) {
@@ -24,10 +20,24 @@ export class TasksController {
     return task;
   }
 
-  public handlePatchTasks() {
-    return {
-      title: "This is a title",
-      description: "Task description",
-    };
+  public async handlePatchTasks(
+    req: Request<{}, {}, IPartialTaskWithId>,
+    res: Response
+  ) {
+    const task = await Task.findById(req.body._id);
+
+    if (task) {
+      task.title = req.body.title ? req.body.title : task.title;
+      task.description = req.body.description
+        ? req.body.description
+        : task.description;
+      task.status = req.body.status ? req.body.status : task.status;
+      task.priority = req.body.priority ? req.body.priority : task.priority;
+      task.dueDate = req.body.dueDate ? req.body.dueDate : task.dueDate;
+
+      await task.save();
+    }
+
+    return task;
   }
 }

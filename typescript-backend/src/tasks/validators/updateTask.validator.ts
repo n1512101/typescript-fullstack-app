@@ -1,9 +1,15 @@
 import { checkSchema } from "express-validator";
 
-export const createTaskValidator = checkSchema({
-  title: {
+export const updateTaskValidator = checkSchema({
+  _id: {
     in: ["body"],
     notEmpty: true,
+    isMongoId: true,
+    errorMessage: "Valid document id is required",
+  },
+  title: {
+    in: ["body"],
+    optional: true,
     errorMessage: "title is required",
     isString: true,
     isLength: {
@@ -16,20 +22,20 @@ export const createTaskValidator = checkSchema({
   },
   description: {
     in: ["body"],
-    notEmpty: true,
+    optional: true,
     isString: true,
     trim: true,
   },
   status: {
     in: ["body"],
-    notEmpty: true,
+    optional: true,
     isIn: {
       options: [["todo", "inProgress", "completed"]],
     },
   },
   priority: {
     in: ["body"],
-    notEmpty: true,
+    optional: true,
     isIn: {
       options: [["high", "low", "normal"]],
     },
@@ -37,6 +43,6 @@ export const createTaskValidator = checkSchema({
   dueDate: {
     in: ["body"],
     isISO8601: true,
-    notEmpty: true,
+    optional: true,
   },
 });

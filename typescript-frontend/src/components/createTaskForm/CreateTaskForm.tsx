@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -29,16 +30,32 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import CreateTaskSchema from "@/schemas/CreateTask.schema";
 import { z } from "zod";
+import useCreateTask from "@/hooks/CreateTask.hook";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 const CreateTaskForm = () => {
   const form = useForm<z.infer<typeof CreateTaskSchema>>({
     resolver: zodResolver(CreateTaskSchema),
-    defaultValues: {},
+    defaultValues: {
+      status: "todo",
+      priority: "normal",
+    },
   });
 
+  const { mutate, isSuccess, isError, isPending } = useCreateTask();
+
   function onSubmit(values: z.infer<typeof CreateTaskSchema>) {
-    console.log(values);
+    const dueDate = values.dueDate.toISOString();
+    mutate({ ...values, dueDate });
   }
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast("New Task Created");
+    }
+    form.reset();
+  }, [isSuccess]);
 
   return (
     <div>
@@ -170,7 +187,11 @@ const CreateTaskForm = () => {
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Textarea placeholder="Task Description" {...field} />
+                    <Textarea
+                      placeholder="Task Description"
+                      {...field}
+                      value={field.value ?? ""}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -182,6 +203,7 @@ const CreateTaskForm = () => {
           </div>
         </form>
       </Form>
+      <Toaster />
     </div>
   );
 };

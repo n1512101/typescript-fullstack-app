@@ -1,10 +1,11 @@
 import { useMutation } from "@tanstack/react-query";
 import { ITask } from "@/types/task.interface";
 import { IResponse } from "@/types/response.interface";
+import { IUpdateTask } from "@/types/updateTask.interface";
 
-const createTask = async (task: ITask) => {
-  const response = await fetch("http://localhost:3001/tasks/create", {
-    method: "POST",
+const updateTask = async (task: IUpdateTask) => {
+  const response = await fetch(`${import.meta.env.VITE_API_URL}tasks/update`, {
+    method: "PATCH",
     headers: {
       "Content-Type": "application/json",
     },
@@ -16,9 +17,9 @@ const createTask = async (task: ITask) => {
   return await response.json();
 };
 
-export default function useCreateTask() {
+export default function useUpdateTask() {
   return useMutation({
-    mutationFn: createTask,
+    mutationFn: updateTask,
     onSuccess: (response: IResponse<ITask>) => console.log(response),
     onError: (error) => console.log(error),
   });

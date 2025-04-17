@@ -2,8 +2,11 @@ import { FC, ReactElement } from "react";
 import TasksCounter from "@/components/tasksCounter/TasksCounter";
 import Task from "@/components/task/Task";
 import TaskSidebar from "@/components/taskSidebar/TaskSidebar";
+import useFetchTasks from "@/hooks/useFetchTasks.hook";
 
 const Tasks: FC = (): ReactElement => {
+  const { data, isSuccess, isError } = useFetchTasks({});
+
   return (
     <section className="flex flex-row w-full p-4 gap-8">
       <section className="flex basis-2/3 justify-center">
@@ -12,24 +15,45 @@ const Tasks: FC = (): ReactElement => {
             Task as on: Saturday, 1 Mar 2025
           </h1>
           <div className="flex justify-around mb-12">
-            <TasksCounter status="todo" count={12} />
-            <TasksCounter status="inProgress" count={10} />
-            <TasksCounter status="completed" count={15} />
+            <TasksCounter
+              status="todo"
+              count={
+                data && data.meta && "todoTasks" in data.meta
+                  ? (data.meta.todoTasks as number)
+                  : 0
+              }
+            />
+            <TasksCounter
+              status="inProgress"
+              count={
+                data && data.meta && "inProgressTasks" in data.meta
+                  ? (data.meta.inProgressTasks as number)
+                  : 0
+              }
+            />
+            <TasksCounter
+              status="completed"
+              count={
+                data && data.meta && "completedTasks" in data.meta
+                  ? (data.meta.completedTasks as number)
+                  : 0
+              }
+            />
           </div>
-          <Task
-            title="Test Title"
-            description="Test Description"
-            status="inProgress"
-            priority="normal"
-            dueDate="2025-01-02T12:00:00.000Z"
-          />
-          <Task
-            title="Test Title2"
-            description="Test Description2"
-            status="todo"
-            priority="high"
-            dueDate="2025-01-02T12:00:00.000Z"
-          />
+
+          {data &&
+            Array.isArray(data.data) &&
+            data.data.map((item) => (
+              <Task
+                key={item._id}
+                _id={item._id}
+                title={item.title}
+                description={item.description}
+                status={item.status}
+                priority={item.priority}
+                dueDate={item.dueDate}
+              />
+            ))}
         </div>
       </section>
       <section className="flex basis-1/3">

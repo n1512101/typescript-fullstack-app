@@ -30,7 +30,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import CreateTaskSchema from "@/schemas/CreateTask.schema";
 import { z } from "zod";
-import useCreateTask from "@/hooks/CreateTask.hook";
+import useCreateTask from "@/hooks/useCreateTask.hook";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 
